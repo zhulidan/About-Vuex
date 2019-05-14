@@ -122,7 +122,7 @@
   Vue.use(Vuex);
    const state={//要设置的全局访问的state对象
        showFooter: true,
-       changableNum:0
+       count: 0
        //要设置的初始属性值
    };
    const store = new Vuex.Store({
@@ -132,3 +132,55 @@
   export default store;
 ```
 - 实际上做完上面的三个步骤后，你已经可以用this.$store.state.showFooter或this.$store.state.changebleNum在任何一个组件里面获取showfooter和changebleNum定义的值了
+### 2.1.3、项目中此时有关 state 的代码
+- /src/store/index.js
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  Vue.use(Vuex);
+  const state={//要设置的全局访问的state对象
+    showFooter: true,
+    count: 0
+    //要设置的初始属性值
+  };
+  //创建一个vuex容器，容器是唯一的
+  const store = new Vuex.Store({
+    state
+  });
+  export default store;
+```
+- /src/main.js
+```javascript
+  import Vue from 'vue'
+  import App from './App'
+  import router from './router'
+  import store from './store'; //引入store
+  Vue.config.productionTip = false
+  
+  /* eslint-disable no-new */
+  new Vue({
+    el: '#app',
+    router,
+    store,//使用store， store被注册到实例上，所有组件都会有一个属性 this.$store(this.$store指的就是new Vuex.Store后的实例),最后的状态(state)都会放在实例上
+    components: { App },
+    template: '<App/>'
+  });
+```
+- /src/components/Home.vue
+```
+  <template>
+    <div>
+      {{counts}}
+    </div>
+  </template>
+  <script>
+    export default {
+      name: "Home",
+      computed: {
+        counts() {
+          return this.$store.state.count
+        }
+      }
+    }
+  </script>
+```
