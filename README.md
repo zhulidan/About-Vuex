@@ -167,7 +167,7 @@
   });
 ```
 - /src/components/Home.vue
-```
+```javascript
   <template>
     <div>
       {{counts}}
