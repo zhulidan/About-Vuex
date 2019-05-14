@@ -35,7 +35,7 @@
     
     Vue.use(Vuex)
 ```
-### 1.3.2、vuex的引入与使用
+### 1.3.2、vuex的引入与使用(博客)
 - 在src文件目录下新建一个名为store的文件夹，为方便引入并在store文件夹里新建一个index.js,里面的内容如下:
 ```javascript
   import Vue from 'vue';
@@ -70,14 +70,12 @@
 # 二、vuex的核心概念
 ## 2.1、 state
 ### 2.1.1、官网有关state
-1.  单一状态树
+1. 单一状态树
       - Vuex 使用单一状态树，用一个对象就包含了全部的应用层级状态。至此它便作为一个“唯一数据源 (SSOT)”而存在。每个应用将仅仅包含一个 store 实例。单一状态树让我们能够直接地定位任一特定的状态片段，在调试的过程中也能轻易地取得整个当前应用状态的快照。
-2.  在 Vue 组件中获得 Vuex 状态（官网）
-    - 1) 创建一个 store。
-        - 创建过程直截了当——仅需要提供一个初始 state 对象
+2. 创建一个 store
+    - 创建过程直截了当——仅需要提供一个初始 state 对象
   ```javascript
      // 如果在模块化构建系统中，请确保在开头调用了 Vue.use(Vuex)
-  
      const store = new Vuex.Store({
        state: {
          count: 0
@@ -85,4 +83,52 @@
      })
   ```
 3. 在 Vue 组件中获得 Vuex 状态
+   - 由于 Vuex 的状态存储是响应式的，从 store 实例中读取状态最简单的方法就是在 **计算属性** 中返回某个状态
+ ```javascript
+    // 创建一个 Counter 组件
+    const Counter = {
+      template: `<div>{{ count }}</div>`,
+      computed: {
+        count () {
+          return store.state.count
+        }
+      }
+    }
+ ```  
+  - 每当 store.state.count 变化的时候, 都会重新求取计算属性，并且触发更新相关联的 DOM。
+  - 然而，这种模式导致组件依赖全局状态单例。在模块化的构建系统中，在每个需要使用 state 的组件中需要频繁地导入，并且在测试组件时需要模拟状态。
+  
+  - Vuex 通过 store 选项，提供了一种机制将状态从根组件“注入”到每一个子组件中（需调用 Vue.use(Vuex)）：
+```javascript
+  const app = new Vue({
+    el: '#app',
+    // 把 store 对象提供给 “store” 选项，这可以把 store 的实例注入所有的子组件
+    store,
+    components: { Counter },
+    template: `
+      <div class="app">
+        <counter></counter>
+      </div>
+    `
+  })
+```
+  - 在根实例中注册 store 选项，该 store 实例会注入到 **根组件** 下的所有子组件中，且子组件能通过 this.$store 访问到。
 
+### 2.1.2、state（博客）
+- 回到store文件的index.js里面，我们先声明一个state变量，并赋值一个空对象给它，里面随便定义两个初始属性值；然后再在实例化的Vuex.Store里面传入一个空对象，并把刚声明的变量state仍里面：
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  Vue.use(Vuex);
+   const state={//要设置的全局访问的state对象
+       showFooter: true,
+       changableNum:0
+       //要设置的初始属性值
+   };
+   const store = new Vuex.Store({
+         state
+   });
+   
+  export default store;
+```
+- 实际上做完上面的三个步骤后，你已经可以用this.$store.state.showFooter或this.$store.state.changebleNum在任何一个组件里面获取showfooter和changebleNum定义的值了
