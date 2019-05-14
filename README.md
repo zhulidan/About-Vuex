@@ -35,7 +35,7 @@
     
     Vue.use(Vuex)
 ```
-### 1.3.2、博客
+### 1.3.2、vuex的引入与使用
 - 在src文件目录下新建一个名为store的文件夹，为方便引入并在store文件夹里新建一个index.js,里面的内容如下:
 ```javascript
   import Vue from 'vue';
@@ -57,3 +57,4 @@
     components: { App }
   })
 ```
+> 注：项目的初始化步骤在这些省略，vuex的导入与使用，上面已有，在这里不在展示代码了
