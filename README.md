@@ -21,15 +21,39 @@
 - 在SPA单页面组件的开发中 Vue的vuex和React的Redux 都统称为同一状态管理，个人的理解是全局状态管理更合适；简单的理解就是你在state中定义了一个数据之后，你可以在所在项目中的任何一个组件里进行获取、进行修改，并且你的修改可以得到全局的响应变更
 
 ## 1.2、 vuex的安装
-- npm 
+- npm(官网) 
 ```
     npm install vuex --save
 ```
-- 在一个模块化的打包系统中，您必须显式地通过 Vue.use() 来安装 Vuex：
+
+## 1.3、 vuex的引入
+### 1.3.1、 官网
+- 在一个模块化的打包系统中，您必须显式地通过 Vue.use() 来安装 Vuex：(官网)
 ``` 
     import Vue from 'vue'
     import Vuex from 'vuex'
     
     Vue.use(Vuex)
 ```
-
+### 1.3.2、博客
+- 在src文件目录下新建一个名为store的文件夹，为方便引入并在store文件夹里新建一个index.js,里面的内容如下:
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  Vue.use(Vuex);
+  const store = new Vuex.Store();
+ 
+  export default store;
+```
+- 接下来，在 main.js里面引入store，然后再全局注入一下，这样一来就可以在任何一个组件里面使用this.$store了：
+```javascript
+  import store from './store'//引入store
+   
+  new Vue({
+    el: '#app',
+    router,
+    store,//使用store
+    template: '<App/>',
+    components: { App }
+  })
+```
