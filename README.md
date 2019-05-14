@@ -32,3 +32,4 @@
     
     Vue.use(Vuex)
 ```
+
