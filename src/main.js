@@ -10,7 +10,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
-  store,//使用store
+  store,//使用store， store被注册到实例上，所有组件都会有一个属性 this.$store(this.$store指的就是new Vuex.Store后的实例),最后的状态(state)都会放在实例上
   components: { App },
   template: '<App/>'
 });

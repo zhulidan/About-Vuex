@@ -1,4 +1,4 @@
-# 一、vuex的介绍及安装
+# 一、vuex的介绍及安装与导入
 
 ## 1.1、 vuex的介绍
 
@@ -41,6 +41,7 @@
   import Vue from 'vue';
   import Vuex from 'vuex';
   Vue.use(Vuex);
+  //创建一个vuex容器，容器是唯一的
   const store = new Vuex.Store();
  
   export default store;
@@ -52,7 +53,10 @@
   new Vue({
     el: '#app',
     router,
-    store,//使用store
+    // 1. store被注册到实例上，所有组件都会有一个属性 this.$store(this.$store指的就是new Vuex.Store后的实例),最后的状态(state)都会放在实例上
+    // 2. 使用store ，容器与实例关联起来   
+    // 3. 完整写法 store: store 简写 store
+    store,           
     template: '<App/>',
     components: { App }
   })
@@ -60,3 +64,22 @@
 > 注：
   1. 项目的初始化步骤在这些省略，vuex的导入与使用，1.3.2中已有，在这里不在展示代码了
   2. 博客地址：https://segmentfault.com/a/1190000015782272
+
+# 二、vuex的核心概念
+## 2.1、 state
+### 2.1.1、单一状态树（官网）
+- Vuex 使用单一状态树，用一个对象就包含了全部的应用层级状态。至此它便作为一个“唯一数据源 (SSOT)”而存在。每个应用将仅仅包含一个 store 实例。单一状态树让我们能够直接地定位任一特定的状态片段，在调试的过程中也能轻易地取得整个当前应用状态的快照。
+### 2.1.2、在 Vue 组件中获得 Vuex 状态（官网）
+1. 创建一个 store。
+  - 创建过程直截了当——仅需要提供一个初始 state 对象
+```javascript
+  // 如果在模块化构建系统中，请确保在开头调用了 Vue.use(Vuex)
+  
+  const store = new Vuex.Store({
+    state: {
+      count: 0
+    }
+  })
+```
+2. 在 Vue 组件中获得 Vuex 状态
+
