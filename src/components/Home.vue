@@ -13,7 +13,7 @@
       },
       gettersCount(){
         return this.$store.getters.isShow
-      }
+      },
     }
   }
 </script>
