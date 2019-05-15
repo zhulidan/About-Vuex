@@ -69,7 +69,7 @@
 
 # 二、vuex的核心概念
 ## 2.1、 state
-### 2.1.1、官网有关state
+### 2.1.1、state - 官网
 1. 单一状态树
       - Vuex 使用单一状态树，用一个对象就包含了全部的应用层级状态。至此它便作为一个“唯一数据源 (SSOT)”而存在。每个应用将仅仅包含一个 store 实例。单一状态树让我们能够直接地定位任一特定的状态片段，在调试的过程中也能轻易地取得整个当前应用状态的快照。
 2. 创建一个 store
@@ -114,7 +114,8 @@
 ```
   - 在根实例中注册 store 选项，该 store 实例会注入到 **根组件** 下的所有子组件中，且子组件能通过 this.$store 访问到。
 
-### 2.1.2、state（博客）
+### 2.1.2、state - 博客
+- vuex中的数据源，我们需要保存的数据就保存在这里，可以在页面通过 this.$store.state来获取我们定义的数据；
 - 回到store文件的index.js里面，我们先声明一个state变量，并赋值一个空对象给它，里面随便定义两个初始属性值；然后再在实例化的Vuex.Store里面传入一个空对象，并把刚声明的变量state仍里面：
 ```javascript
   import Vue from 'vue';
@@ -179,6 +180,143 @@
       computed: {
         counts() {
           return this.$store.state.count
+        }
+      }
+    }
+  </script>
+```
+
+## 2.2、 getter
+### 2.2.1、getter - 官网
+1. Vuex 允许我们在 store 中定义“getter”（可以认为是 store 的计算属性）。就像计算属性一样，getter 的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算。
+2. Getter 接受 state 作为其第一个参数：
+```javascript
+  const store = new Vuex.Store({
+    state: {
+      todos: [
+        { id: 1, text: '...', done: true },
+        { id: 2, text: '...', done: false }
+      ]
+    },
+    getters: {
+      doneTodos: state => {
+        return state.todos.filter(todo => todo.done)
+      }
+    }
+  })
+```
+3. 通过属性访问
+  - Getter 会暴露为 **store.getters** 对象，你可以以属性的形式访问这些值：
+```javascript
+  store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
+```
+  - Getter 也可以接受其他 getter 作为第二个参数：
+  ```javascript
+    getters: {
+      // ...
+      doneTodosCount: (state, getters) => {
+        return getters.doneTodos.length
+      }
+    }
+  ```
+  ```javascript
+    store.getters.doneTodosCount // -> 1
+  ```
+  - 我们可以很容易地在任何组件中使用它：
+  ```javascript
+    computed: {
+      doneTodosCount () {
+        return this.$store.getters.doneTodosCount
+      }
+    }
+  ```
+> 注意：getter 在通过属性访问时是作为 Vue 的响应式系统的一部分缓存其中的。  
+
+4. 通过方法访问
+  - 你也可以通过让 getter 返回一个函数，来实现给 getter 传参。在你对 store 里的数组进行查询时非常有用。
+  ```javascript
+    getters: {
+      // ...
+      getTodoById: (state) => (id) => {
+        return state.todos.find(todo => todo.id === id)
+      }
+    }
+  ```  
+  ```javascript
+    store.getters.getTodoById(2) // -> { id: 2, text: '...', done: false }
+  ```
+> 注意：getter 在通过方法访问时，每次都会去进行调用，而不会缓存结果。  
+
+### 2.2.1、getter - 博客
+- vue计算属性computed一样，来实时监听state值的变化(最新状态)，并把它也仍进Vuex.Store里面
+- Getter相当于vue中的computed计算属性，getter 的返回值会根据它的依赖被**缓存**起来，且只有当它的依赖值发生了改变才会被重新计算，这里我们可以通过定义vuex的Getter来获取，Getters 可以用于监听、state中的值的变化，返回计算后的结果
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  Vue.use(Vuex);
+   const state={   //要设置的全局访问的state对象
+       showFooter: true,
+       changableNum:0
+       //要设置的初始属性值
+     };
+  const getters = {   //实时监听state值的变化(最新状态)
+      isShow(state) {  //方法名随意,主要是来承载变化的showFooter的值
+         return state.showFooter
+      },
+      getChangedNum(){  //方法名随意,主要是用来承载变化的changableNum的值
+         return state.changebleNum
+      }
+  };
+  const store = new Vuex.Store({
+         state,
+         getters
+  });
+  export default store;
+```
+### 2.2.3、项目中此时有关 getter 的代码
+- /src/store/index.js
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  
+  Vue.use(Vuex);
+  const state = {//要设置的全局访问的state对象
+    showFooter: true,
+    count: 0
+    //要设置的初始属性值
+  };
+  const getters = { //实时监听state值的变化(最新状态)
+    isShow(state) {  //方法名随意,主要是来承载变化的showFooter的值
+      return state.showFooter;
+    },
+    getChangedNum() {  //方法名随意,主要是用来承载变化的count的值
+      return state.count;
+    }
+  };
+  //创建一个vuex容器，容器是唯一的
+  const store = new Vuex.Store({
+    state,
+    getters
+  });
+  export default store;
+```
+- /src/components/Home.vue
+```javascript
+  <template>
+    <div>
+      <p>count: {{counts}}</p>
+      <p>showFooter：{{gettersCount}}</p>
+    </div>
+  </template>
+  <script>
+    export default {
+      name: "Home",
+      computed: {
+        counts() {
+          return this.$store.state.count
+        },
+        gettersCount(){
+          return this.$store.getters.isShow
         }
       }
     }
