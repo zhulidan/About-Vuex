@@ -396,7 +396,17 @@
     state.obj = { ...state.obj, newProp: 123 }
    ```
 ##### Mutation 必须是同步函数    
-  - 一条重要的原则就是要记住 mutation 必须是 **同步函数**
+  - 一条重要的原则就是要记住 mutation 必须是 **同步函数**。为什么？请参考下面的例子：
+  ```javascript
+    mutations: {
+      someMutation (state) {
+        api.callAsyncMethod(() => {
+          state.count++
+        })
+      }
+    }
+  ```
+  - 现在想象，我们正在 debug 一个 app 并且观察 devtool 中的 mutation 日志。每一条 mutation 被记录，devtools 都需要捕捉到前一状态和后一状态的快照。然而，在上面的例子中 mutation 中的异步函数中的回调让这不可能完成：因为当 mutation 触发的时候，回调函数还没有被调用，devtools 不知道什么时候回调函数实际上被调用——实质上任何在回调函数中进行的状态的改变都是不可追踪的。
   
 ### 2.3.2、mutation - 博客
 - mutattions也是一个对象，这个对象里面可以放改变state的初始值的方法，具体的用法就是给里面的方法传入参数state或额外的参数,然后利用vue的双向数据驱动进行值的改变，同样的定义好之后也把这个mutations扔进Vuex.Store里面，如下：
