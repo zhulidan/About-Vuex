@@ -68,7 +68,7 @@
   2. 博客地址：https://segmentfault.com/a/1190000015782272
 
 # 二、vuex的核心概念
-## 2.1、 state
+## 2.1、 State
 ### 2.1.1、state - 官网
 1. 单一状态树
       - Vuex 使用单一状态树，用一个对象就包含了全部的应用层级状态。至此它便作为一个“唯一数据源 (SSOT)”而存在。每个应用将仅仅包含一个 store 实例。单一状态树让我们能够直接地定位任一特定的状态片段，在调试的过程中也能轻易地取得整个当前应用状态的快照。
@@ -132,7 +132,7 @@
    
   export default store;
 ```
-- 实际上做完上面的三个步骤后，你已经可以用this.$store.state.showFooter或this.$store.state.changebleNum在任何一个组件里面获取showfooter和changebleNum定义的值了
+- 实际上做完上面的三个步骤后，你已经可以用this.$store.state.showFooter或this.$store.state.count在任何一个组件里面获取showfooter和count定义的值了
 ### 2.1.3、项目中此时有关 state 的代码
 - /src/store/index.js
 ```javascript
@@ -186,7 +186,7 @@
   </script>
 ```
 
-## 2.2、 getter
+## 2.2、 Getter
 ### 2.2.1、getter - 官网
 1. Vuex 允许我们在 store 中定义“getter”（可以认为是 store 的计算属性）。就像计算属性一样，getter 的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算。
 2. Getter 接受 state 作为其第一个参数：
@@ -323,3 +323,36 @@
   </script>
 ```
 
+## 2.3、 Mutation
+### 2.3.1、mutation - 官网
+- 更改 Vuex 的 store 中的状态的唯一方法是提交 mutation。Vuex 中的 mutation 非常类似于事件：每个 mutation 都有一个字符串的 事件类型 (type) 和 一个 回调函数 (handler)。这个回调函数就是我们实际进行状态更改的地方，并且它会接受 state 作为第一个参数：
+```javascript
+  const store = new Vuex.Store({
+    state: {
+      count: 1
+    },
+    mutations: {
+      increment (state) {
+        // 变更状态
+        state.count++
+      }
+    }
+  })
+```
+- 你不能直接调用一个 mutation handler。这个选项更像是事件注册：“当触发一个类型为 increment 的 mutation 时，调用此函数。”要唤醒一个 mutation handler，你需要以相应的 type 调用 store.commit 方法：
+ ```javascript
+  store.commit('increment')
+```
+- 提交载荷
+  - 你可以向 store.commit 传入额外的参数，即 mutation 的 载荷（payload）：
+ ```javascript
+    // ...
+    mutations: {
+      increment (state, n){
+        state.count += n
+      }
+    }
+```
+  ```javascript
+    store.commit('increment', 10)
+```
