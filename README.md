@@ -340,19 +340,41 @@
   })
 ```
 - 你不能直接调用一个 mutation handler。这个选项更像是事件注册：“当触发一个类型为 increment 的 mutation 时，调用此函数。”要唤醒一个 mutation handler，你需要以相应的 type 调用 store.commit 方法：
- ```javascript
+```javascript
   store.commit('increment')
 ```
 - 提交载荷
-  - 你可以向 store.commit 传入额外的参数，即 mutation 的 载荷（payload）：
- ```javascript
+  - 你可以向 store.commit 传入额外的参数，即 mutation 的载荷（payload）：
+  ```javascript
     // ...
     mutations: {
       increment (state, n){
         state.count += n
       }
     }
-```
+  ```
   ```javascript
     store.commit('increment', 10)
-```
+  ```
+  - 在大多数情况下，载荷应该是一个对象，这样可以包含多个字段并且记录的 mutation 会更易读：
+  ```javascript
+    // ...
+    mutations: {
+      increment (state, payload) {
+        state.count += payload.amount
+      }
+    }
+  ```
+  ```javascript
+    store.commit('increment', {
+      amount: 10
+    })
+  ```
+  - 对象风格的提交方式
+    - 提交 mutation 的另一种方式是直接使用包含 type 属性的对象：
+   ```javascript
+    store.commit({
+      type: 'increment',
+      amount: 10
+    })
+   ```
