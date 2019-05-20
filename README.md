@@ -343,7 +343,7 @@
 ```javascript
   store.commit('increment')
 ```
-- 提交载荷
+##### 提交载荷
   - 你可以向 store.commit 传入额外的参数，即 mutation 的载荷（payload）：
   ```javascript
     // ...
@@ -370,11 +370,11 @@
       amount: 10
     })
   ```
-  - 对象风格的提交方式
-    - 提交 mutation 的另一种方式是直接使用包含 type 属性的对象：
-   ```javascript
+##### 对象风格的提交方式
+  - 提交 mutation 的另一种方式是直接使用包含 type 属性的对象：
+  ```javascript
     store.commit({
       type: 'increment',
       amount: 10
     })
-   ```
+  ```
