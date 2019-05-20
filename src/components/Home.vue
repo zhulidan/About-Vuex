@@ -1,7 +1,8 @@
 <template>
   <div>
-    <p>count: {{counts}}</p>
-    <p>showFooter：{{gettersCount}}</p>
+    <p>【state】count的值为： {{counts}}</p>
+    <p>【getter】showFooter的值为{{gettersCount}}</p>
+    <p>【mutation】<button @click="getValue">count的值+6</button></p>
   </div>
 </template>
 <script>
@@ -14,6 +15,11 @@
       gettersCount(){
         return this.$store.getters.isShow
       },
+    },
+    methods:{
+      getValue(){
+         this.$store.commit('newNum',6)
+      }
     }
   }
 </script>

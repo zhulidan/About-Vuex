@@ -378,3 +378,130 @@
       amount: 10
     })
   ```
+  - 当使用对象风格的提交方式，整个对象都作为载荷传给 mutation 函数，因此 handler 保持不变：
+  ```javascript
+    mutations: {
+      increment (state, payload) {
+        state.count += payload.amount
+      }
+    }
+  ```
+##### Mutation 需遵守 Vue 的响应规则
+  - 既然 Vuex 的 store 中的状态是响应式的，那么当我们变更状态时，监视状态的 Vue 组件也会自动更新。这也意味着 Vuex 中的 mutation 也需要与使用 Vue 一样遵守一些注意事项：
+    1. 最好提前在你的 store 中初始化好所有所需属性。
+    2. 当需要在对象上添加新属性时，你应该
+      - 使用 Vue.set(obj, 'newProp', 123), 或者
+      - 以新对象替换老对象。例如，利用 stage-3 的对象展开运算符我们可以这样写：
+   ```javascript
+    state.obj = { ...state.obj, newProp: 123 }
+   ```
+##### Mutation 必须是同步函数    
+  - 一条重要的原则就是要记住 mutation 必须是 **同步函数**
+  
+### 2.3.2、mutation - 博客
+- mutattions也是一个对象，这个对象里面可以放改变state的初始值的方法，具体的用法就是给里面的方法传入参数state或额外的参数,然后利用vue的双向数据驱动进行值的改变，同样的定义好之后也把这个mutations扔进Vuex.Store里面，如下：
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  Vue.use(Vuex);
+   const state={   //要设置的全局访问的state对象
+       showFooter: true,
+       changableNum:0
+       //要设置的初始属性值
+     };
+  const getters = {   //实时监听state值的变化(最新状态)
+      isShow(state) {  //承载变化的showFooter的值
+         return state.showFooter
+      },
+      getChangedNum(){  //承载变化的changebleNum的值
+         return state.changableNum
+      }
+  };
+  const mutations = {
+      show(state) {   //自定义改变state初始值的方法，这里面的参数除了state之外还可以再传额外的参数(变量或对象);
+          state.showFooter = true;
+      },
+      hide(state) {  //同上
+          state.showFooter = false;
+      },
+      newNum(state,sum){ //同上，这里面的参数除了state之外还传了需要增加的值sum
+         state.changableNum+=sum;
+      }
+  };
+   const store = new Vuex.Store({
+         state,
+         getters,
+         mutations
+  });
+  export default store;
+```
+- 这时候你完全可以用 this.$store.commit('show') 或 this.$store.commit('hide') 以及 this.$store.commit('newNum',6) 在别的组件里面进行改变showfooter和changebleNum的值了，但这不是理想的改变值的方式；因为在 Vuex 中，mutations里面的方法 都是 **同步** 事务，意思就是说：比如这里的一个this.$store.commit('newNum',sum)方法,两个组件里用执行得到的值，每次都是一样的，这样肯定不是理想的需求
+
+### 2.3.3、项目中此时有关 mutation 的代码
+- /src/store/index.js
+```javascript
+  import Vue from 'vue';
+  import Vuex from 'vuex';
+  
+  Vue.use(Vuex);
+  const state = {//要设置的全局访问的state对象
+    //要设置的初始属性值
+    showFooter: true,
+    count: 0
+  };
+  const getters = { //实时监听state值的变化(最新状态)
+    isShow(state) {  //方法名随意,主要是来承载变化的showFooter的值
+      return state.showFooter;
+    },
+    getChangedNum() {  //方法名随意,主要是用来承载变化的count的值
+      return state.count;
+    },
+  };
+  // 定义mutation
+  const mutations = {
+    show(state) {   //自定义改变state初始值的方法，这里面的参数除了state之外还可以再传额外的参数(变量或对象);
+      state.showFooter = true;
+    },
+    hide(state) {  //同上
+      state.showFooter = false;
+    },
+    newNum(state,sum){ //同上，这里面的参数除了state之外还传了需要增加的值sum
+      state.count+=sum;
+    }
+  };
+  const store = new Vuex.Store({
+    state,
+    getters,
+    mutations//注册
+  });
+  export default store;
+```
+- /src/components/Home.vue
+```javascript
+  <template>
+    <div>
+      <p>【state】count的值为： {{counts}}</p>
+      <p>【getter】showFooter的值为{{gettersCount}}</p>
+      <p>【mutation】<button @click="getValue">count的值+6</button></p>
+    </div>
+  </template>
+  <script>
+    export default {
+      name: "Home",
+      computed: {
+        counts() {
+          return this.$store.state.count
+        },
+        gettersCount(){
+          return this.$store.getters.isShow
+        },
+      },
+      methods:{
+        getValue(){
+           this.$store.commit('newNum',6)
+        }
+      }
+    }
+  </script>
+
+```
