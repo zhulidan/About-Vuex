@@ -113,7 +113,62 @@
   })
 ```
   - 在根实例中注册 store 选项，该 store 实例会注入到 **根组件** 下的所有子组件中，且子组件能通过 this.$store 访问到。
-
+4. mapState 辅助函数
+  - 当一个组件需要获取多个状态时候，将这些状态都声明为计算属性会有些重复和冗余。为了解决这个问题，我们可以使用 mapState 辅助函数帮助我们生成计算属性，让你少按几次键：
+  ```javascript
+    // 在单独构建的版本中辅助函数为 Vuex.mapState
+    import { mapState } from 'vuex'
+    
+    export default {
+      // ...
+      computed: mapState({
+        // 箭头函数可使代码更简练
+        count: state => state.count,
+    
+        // 传字符串参数 'count' 等同于 `state => state.count`
+        countAlias: 'count',
+    
+        // 为了能够使用 `this` 获取局部状态，必须使用常规函数
+        countPlusLocalState (state) {
+          return state.count + this.localCount
+        }
+      })
+    }
+  ```
+  - 当映射的计算属性的名称与 state 的子节点名称相同时，我们也可以给 mapState 传一个字符串数组。
+  ```javascript
+    computed: mapState([
+      // 映射 this.count 为 store.state.count
+      'count'
+    ])
+  ```
+  ##### 对象展开运算符
+    - mapState 函数返回的是一个对象。我们如何将它与局部计算属性混合使用呢？通常，我们需要使用一个工具函数将多个对象合并为一个，以使我们可以将最终对象传给 computed 属性。但是自从有了对象展开运算符（现处于 ECMAScript 提案 stage-4 阶段），我们可以极大地简化写法：
+  ```javascript
+    computed: {
+      localComputed () { /* ... */ },
+      // 使用对象展开运算符将此对象混入到外部对象中
+      ...mapState({
+        // ...
+      })
+    }
+  ```
+ 5. 组件仍然保有局部状态
+  - 使用 Vuex 并不意味着你需要将所有的状态放入 Vuex。虽然将所有的状态放到 Vuex 会使状态变化更显式和易调试，但也会使代码变得冗长和不直观。如果有些状态严格属于单个组件，最好还是作为组件的局部状态。你应该根据你的应用开发需要进行权衡和确定。
+  
+6. 对象展开运算符
+  - Rest属性收集剩余的自己的可枚举属性键，这些键尚未被解构模式拾取。这些键及其值将复制到新对象上。
+  ```javascript
+    let { x, y, ...z } = { x: 1, y: 2, a: 3, b: 4 };
+    x; // 1
+    y; // 2
+    z; // { a: 3, b: 4 }
+  ```
+  - 对象初始值设定项中的Spread属性将自己的可枚举属性从提供的对象复制到新创建的对象上。
+  ```javascript
+    let n = { x, y, ...z };
+    n; // { x: 1, y: 2, a: 3, b: 4 }
+  ```
 ### 2.1.2、state - 博客
 - vuex中的数据源，我们需要保存的数据就保存在这里，可以在页面通过 this.$store.state来获取我们定义的数据；
 - 回到store文件的index.js里面，我们先声明一个state变量，并赋值一个空对象给它，里面随便定义两个初始属性值；然后再在实例化的Vuex.Store里面传入一个空对象，并把刚声明的变量state仍里面：
@@ -783,3 +838,124 @@
     }
   </script>
 ```
+
+## 2.5、 Module
+### 2.5.1、module - 官网
+- 由于使用单一状态树，应用的所有状态会集中到一个比较大的对象。当应用变得非常复杂时，store 对象就有可能变得相当臃肿。
+- 为了解决以上问题，Vuex 允许我们将 store 分割成 **模块（module）** 。每个模块拥有自己的 state、mutation、action、getter、甚至是嵌套子模块——从上至下进行同样方式的分割：
+```javascript
+  const moduleA = {
+    state: { ... },
+    mutations: { ... },
+    actions: { ... },
+    getters: { ... }
+  }
+  
+  const moduleB = {
+    state: { ... },
+    mutations: { ... },
+    actions: { ... }
+  }
+  
+  const store = new Vuex.Store({
+    modules: {
+      a: moduleA,
+      b: moduleB
+    }
+  })
+  
+  store.state.a // -> moduleA 的状态
+  store.state.b // -> moduleB 的状态
+```
+
+##### 模块的局部状态
+  - 对于模块内部的 mutation 和 getter，接收的第一个参数是 **模块的局部状态对象**。
+  ```javascript
+    const moduleA = {
+      state: { count: 0 },
+      mutations: {
+        increment (state) {
+          // 这里的 `state` 对象是模块的局部状态
+          state.count++
+        }
+      },
+    
+      getters: {
+        doubleCount (state) {
+          return state.count * 2
+        }
+      }
+    }
+  ```
+  - 同样，对于模块内部的 action，局部状态通过 context.state 暴露出来，根节点状态则为 context.rootState：
+  ```javascript
+    const moduleA = {
+      // ...
+      actions: {
+        incrementIfOddOnRootSum ({ state, commit, rootState }) {
+          if ((state.count + rootState.count) % 2 === 1) {
+            commit('increment')
+          }
+        }
+      }
+    }
+  ```
+  - 对于模块内部的 getter，根节点状态会作为第三个参数暴露出来：
+  ```javascript
+    const moduleA = {
+      // ...
+      getters: {
+        sumWithRootCount (state, getters, rootState) {
+          return state.count + rootState.count
+        }
+      }
+    }
+  ```
+##### 命名空间
+  - 默认情况下，模块内部的 action、mutation 和 getter 是注册在 **全局命名空间** 的——这样使得多个模块能够对同一 mutation 或 action 作出响应。 
+  - 如果希望你的模块具有更高的封装度和复用性，你可以通过添加 namespaced: true 的方式使其成为带命名空间的模块。当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名。例如：
+  ```javascript
+    const store = new Vuex.Store({
+      modules: {
+        account: {
+          namespaced: true,
+    
+          // 模块内容（module assets）
+          state: { ... }, // 模块内的状态已经是嵌套的了，使用 `namespaced` 属性不会对其产生影响
+          getters: {
+            isAdmin () { ... } // -> getters['account/isAdmin']
+          },
+          actions: {
+            login () { ... } // -> dispatch('account/login')
+          },
+          mutations: {
+            login () { ... } // -> commit('account/login')
+          },
+    
+          // 嵌套模块
+          modules: {
+            // 继承父模块的命名空间
+            myPage: {
+              state: { ... },
+              getters: {
+                profile () { ... } // -> getters['account/profile']
+              }
+            },
+    
+            // 进一步嵌套命名空间
+            posts: {
+              namespaced: true,
+    
+              state: { ... },
+              getters: {
+                popular () { ... } // -> getters['account/posts/popular']
+              }
+            }
+          }
+        }
+      }
+    })
+  ``` 
+  - 启用了命名空间的 getter 和 action 会收到局部化的 getter，dispatch 和 commit。换言之，你在使用模块内容（module assets）时不需要在同一模块内额外添加空间名前缀。更改 namespaced 属性后不需要修改模块内的代码。
+    
+ 
