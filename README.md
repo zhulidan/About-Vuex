@@ -1440,6 +1440,7 @@
 - 至此，vuex中的常用的一些知识点使用算是简单的分享完了，当然了，相信这些只是一些皮毛！只能说是给予刚接触vuex的初学者一个参考与了解吧！有哪里不明白的或不对的，留言下，咱们可以一起讨论、共同学习！
 
 > 注：项目中有关vuex modules的代码在这里不在展示，就是此时项目中的代码
+
 > 注：有关vuex核心概念的代码分配
   - Home：包含 state  getter mutation action modules
   - Detail: 包含 modules 中 mapState的使用
