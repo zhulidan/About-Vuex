@@ -1197,10 +1197,10 @@
 ### 2.5.1、module - 博客
 - modules 模块化 以及 组件中引入 mapGetters、mapActions 和 mapStates的使用
 - 因为在大多数的项目中，我们对于全局状态的管理并不仅仅一种情况的需求，有时有多方面的需求，比如写一个商城项目，你所用到的全局state可能是关于购物车这一块儿的也有可能是关于商品价格这一块儿的；像这样的情况我们就要考虑使用vuex中的 modules 模块化了，
-- 具体怎么使用modules呢？咱们继续一步一步的走：
-  - 1. 首先，在store文件夹下面新建一个modules文件夹，然后在modules文件里面建立需要管理状态的js文件，既然要把不同部分的状态分开管理，那就要把它们给分成独立的状态文件了，如下图：
-  ![avatar](/src/assets/path.jpg)
-  - 2. 而对应的store文件夹下面的index.js 里面的内容就直接改写成：
+##### 具体怎么使用modules呢？咱们继续一步一步的走：
+1. 首先，在store文件夹下面新建一个modules文件夹，然后在modules文件里面建立需要管理状态的js文件，既然要把不同部分的状态分开管理，那就要把它们给分成独立的状态文件了，如下图：
+ ![avatar](/src/assets/path.jpg)
+2. 而对应的store文件夹下面的index.js 里面的内容就直接改写成：
  ```javascript
     import Vue from 'vue';
     import Vuex from 'vuex';
@@ -1215,7 +1215,7 @@
         }
     });
   ```
-  - 3. 相应的js，其中的 namespaced:true 表示当你需要在别的文件里面使用( mapGetters、mapActions 接下来会说 )时，里面的方法需要注明来自哪一个模块的方法:
+3. 相应的js，其中的 namespaced:true 表示当你需要在别的文件里面使用( mapGetters、mapActions 接下来会说 )时，里面的方法需要注明来自哪一个模块的方法:
   ```javascript
     //collection.js
     
@@ -1291,7 +1291,7 @@
         actions
     }
   ```
-  - 4. 这样一改就有了关于两个模块的state管理文件了 footerStatus.js和collection.js，现在你要运行当前的代码话，项目会报错！因为我们把上面的代码模块化分开了，引用的地方还没有改。接下来咱们一起来看看 
+4. 这样一改就有了关于两个模块的state管理文件了 footerStatus.js和collection.js，现在你要运行当前的代码话，项目会报错！因为我们把上面的代码模块化分开了，引用的地方还没有改。接下来咱们一起来看看 
     - mapState,mapGetters,mapActions的使用，首先 在需要用的 组件里面先导入 import {mapState,mapGetters,mapActions} from 'vuex';咱们先修正一下隐藏或显示页面底部的tabs选项卡（就是上面举的临时例子）的组件代码
 ```javascript
        
@@ -1339,7 +1339,7 @@
   }
   </script>
  ``` 
-  - 5. 现在项目代码应该就不会报错了，好,最后咱们再来看一下mapActions的用法，实际上上面的this.$store.dispatch('footerStatus/showFooter')已经算是一种执行相应模块的action里的方法了，但有时会牵扯的事件的触发及传值，那就会有下面的mapActions用法了,还记得上面的另一个模块collection.js吗？来看一下里面的actions中的方法结构：
+5. 现在项目代码应该就不会报错了，好,最后咱们再来看一下mapActions的用法，实际上上面的this.$store.dispatch('footerStatus/showFooter')已经算是一种执行相应模块的action里的方法了，但有时会牵扯的事件的触发及传值，那就会有下面的mapActions用法了,还记得上面的另一个模块collection.js吗？来看一下里面的actions中的方法结构：
   ```javascript
     const state={
         collects:[],  //初始化一个colects数组
@@ -1402,7 +1402,7 @@
     }
     </script>
    ```
-   - 6. 这样一来，在这个组件里面操作的 collecttion.js 中的state的数据，在其他的任何的一个组件里面都会得到相应的更新变化了，获取状态的页面代码如下：
+6. 这样一来，在这个组件里面操作的 collecttion.js 中的state的数据，在其他的任何的一个组件里面都会得到相应的更新变化了，获取状态的页面代码如下：
    ```javascript
     <template>
       </div>
