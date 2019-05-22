@@ -169,9 +169,10 @@
     let n = { x, y, ...z };
     n; // { x: 1, y: 2, a: 3, b: 4 }
   ```
+  
 ### 2.1.2、state - 博客
 - vuex中的数据源，我们需要保存的数据就保存在这里，可以在页面通过 this.$store.state来获取我们定义的数据；
-- 回到store文件的index.js里面，我们先声明一个state变量，并赋值一个空对象给它，里面随便定义两个初始属性值；然后再在实例化的Vuex.Store里面传入一个空对象，并把刚声明的变量state仍里面：
+- 回到store文件的index.js里面，我们先声明一个state变量，并赋值一个空对象给它，里面随便定义两个初始属性值；然后再在实例化的Vuex.Store里面传入一个空对象，并把刚声明的变量state扔里面：
 ```javascript
   import Vue from 'vue';
   import Vuex from 'vuex';
@@ -301,7 +302,30 @@
     store.getters.getTodoById(2) // -> { id: 2, text: '...', done: false }
   ```
 > 注意：getter 在通过方法访问时，每次都会去进行调用，而不会缓存结果。  
-
+5. mapGetters 辅助函数
+  - mapGetters 辅助函数仅仅是将 store 中的 getter 映射到局部计算属性：
+  ```javascript
+    import { mapGetters } from 'vuex'
+    
+    export default {
+      // ...
+      computed: {
+      // 使用对象展开运算符将 getter 混入 computed 对象中
+        ...mapGetters([
+          'doneTodosCount',
+          'anotherGetter',
+          // ...
+        ])
+      }
+    }
+  ```
+  - 如果你想将一个 getter 属性另取一个名字，使用对象形式：
+  ```javascript
+    mapGetters({
+      // 把 `this.doneCount` 映射为 `this.$store.getters.doneTodosCount`
+      doneCount: 'doneTodosCount'
+    })
+  ```
 ### 2.2.1、getter - 博客
 - vue计算属性computed一样，来实时监听state值的变化(最新状态)，并把它也仍进Vuex.Store里面
 - Getter相当于vue中的computed计算属性，getter 的返回值会根据它的依赖被**缓存**起来，且只有当它的依赖值发生了改变才会被重新计算，这里我们可以通过定义vuex的Getter来获取，Getters 可以用于监听、state中的值的变化，返回计算后的结果
@@ -462,6 +486,28 @@
     }
   ```
   - 现在想象，我们正在 debug 一个 app 并且观察 devtool 中的 mutation 日志。每一条 mutation 被记录，devtools 都需要捕捉到前一状态和后一状态的快照。然而，在上面的例子中 mutation 中的异步函数中的回调让这不可能完成：因为当 mutation 触发的时候，回调函数还没有被调用，devtools 不知道什么时候回调函数实际上被调用——实质上任何在回调函数中进行的状态的改变都是不可追踪的。
+ ##### 在组件中提交 Mutation
+  - 你可以在组件中使用 this.$store.commit('xxx') 提交 mutation，或者使用 mapMutations 辅助函数将组件中的 methods 映射为 store.commit 调用（需要在根节点注入 store）。
+  
+  ```javascript
+    import { mapMutations } from 'vuex'
+    
+    export default {
+      // ...
+      methods: {
+        ...mapMutations([
+          'increment', // 将 `this.increment()` 映射为 `this.$store.commit('increment')`
+    
+          // `mapMutations` 也支持载荷：
+          'incrementBy' // 将 `this.incrementBy(amount)` 映射为 `this.$store.commit('incrementBy', amount)`
+        ]),
+        ...mapMutations({
+          add: 'increment' // 将 `this.add()` 映射为 `this.$store.commit('increment')`
+        })
+      }
+    }
+  ```
+ 
   
 ### 2.3.2、mutation - 博客
 - mutattions也是一个对象，这个对象里面可以放改变state的初始值的方法，具体的用法就是给里面的方法传入参数state或额外的参数,然后利用vue的双向数据驱动进行值的改变，同样的定义好之后也把这个mutations扔进Vuex.Store里面，如下：
@@ -698,6 +744,28 @@
     }
   ```
   > 注：一个 store.dispatch 在不同模块中可以触发多个 action 函数。在这种情况下，只有当所有触发函数完成后，返回的 Promise 才会执行。
+
+##### 在组件中分发 Action
+  - 你在组件中使用 this.$store.dispatch('xxx') 分发 action，或者使用 mapActions 辅助函数将组件的 methods 映射为 store.dispatch 调用（需要先在根节点注入 store）：
+  
+  ```javascript
+    import { mapActions } from 'vuex'
+    
+    export default {
+      // ...
+      methods: {
+        ...mapActions([
+          'increment', // 将 `this.increment()` 映射为 `this.$store.dispatch('increment')`
+    
+          // `mapActions` 也支持载荷：
+          'incrementBy' // 将 `this.incrementBy(amount)` 映射为 `this.$store.dispatch('incrementBy', amount)`
+        ]),
+        ...mapActions({
+          add: 'increment' // 将 `this.add()` 映射为 `this.$store.dispatch('increment')`
+        })
+      }
+    }
+  ```
 
 ### 2.4.2、action - 博客
 - 在vuex官方API还提供了一个actions，这个actions也是个对象变量，最大的作用就是里面的Action方法 可以包含任意异步操作，这里面的方法是用来异步触发mutations里面的方法，actions里面自定义的函数接收一个context参数和要变化的形参，context与store实例具有相同的方法和属性，所以它可以执行context.commit(' '),然后也不要忘了把它也扔进Vuex.Store里面：
