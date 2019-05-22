@@ -1437,5 +1437,37 @@
     </script>
    ```
 
-- 至此，vuex中的常用的一些知识点使用算是简单的分享完了，当然了，相信这些只是一些皮毛！只能说是给予刚接触vuex的初学者一个参考与了解吧！有哪里不明白的或不对的，留言下，咱们可以一起讨论、共同学习！  
+- 至此，vuex中的常用的一些知识点使用算是简单的分享完了，当然了，相信这些只是一些皮毛！只能说是给予刚接触vuex的初学者一个参考与了解吧！有哪里不明白的或不对的，留言下，咱们可以一起讨论、共同学习！
+
+> 注：项目中有关vuex modules的代码在这里不在展示，就是此时项目中的代码
+> 注：有关vuex核心概念的代码分配
+  - Home：包含 state  getter mutation action modules
+  - Detail: 包含 modules 中 mapState的使用
+  - List：包含 modules 中 mapGetters,mapActions 的使用
+  - store文件下都是有关vuex的代码
+
+# 三、项目结构
+## 3.1、 项目结构
+- Vuex 并不限制你的代码结构。但是，它规定了一些需要遵守的规则：
+  1. 应用层级的状态应该集中到单个 store 对象中。
+  2. 提交 mutation 是更改状态的唯一方法，并且这个过程是同步的。
+  3. 异步逻辑都应该封装到 action 里面。
+- 只要你遵守以上规则，如何组织代码随你便。如果你的 store 文件太大，只需将 action、mutation 和 getter 分割到单独的文件。
+- 对于大型应用，我们会希望把 Vuex 相关代码分割到模块中。下面是项目结构示例：
+```
+  ├── index.html
+  ├── main.js
+  ├── api
+  │   └── ... # 抽取出API请求
+  ├── components
+  │   ├── App.vue
+  │   └── ...
+  └── store
+      ├── index.js          # 我们组装模块并导出 store 的地方
+      ├── actions.js        # 根级别的 action
+      ├── mutations.js      # 根级别的 mutation
+      └── modules
+          ├── cart.js       # 购物车模块
+          └── products.js   # 产品模块
+``` 
   
