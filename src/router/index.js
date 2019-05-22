@@ -11,11 +11,18 @@ export default new Router({
     },
     {
       path: '/home',
+      name:'home',
       component: () => import('../components/home')
     },
     {
       path: '/detail',
+      name:'detail',
       component: () => import('../components/Detail')
+    },
+    {
+      path: '/list',
+      name:'list',
+      component: () => import('../components/list')
     }
   ]
 })
