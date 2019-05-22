@@ -1215,7 +1215,7 @@
         }
     });
   ```
-  - 3.相应的js，其中的 namespaced:true 表示当你需要在别的文件里面使用( mapGetters、mapActions 接下来会说 )时，里面的方法需要注明来自哪一个模块的方法:
+  - 3. 相应的js，其中的 namespaced:true 表示当你需要在别的文件里面使用( mapGetters、mapActions 接下来会说 )时，里面的方法需要注明来自哪一个模块的方法:
   ```javascript
     //collection.js
     
@@ -1402,7 +1402,7 @@
     }
     </script>
    ```
-   - 6.这样一来，在这个组件里面操作的 collecttion.js 中的state的数据，在其他的任何的一个组件里面都会得到相应的更新变化了，获取状态的页面代码如下：
+   - 6. 这样一来，在这个组件里面操作的 collecttion.js 中的state的数据，在其他的任何的一个组件里面都会得到相应的更新变化了，获取状态的页面代码如下：
    ```javascript
     <template>
       </div>
