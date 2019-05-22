@@ -1025,5 +1025,178 @@
     })
   ``` 
   - 启用了命名空间的 getter 和 action 会收到局部化的 getter，dispatch 和 commit。换言之，你在使用模块内容（module assets）时不需要在同一模块内额外添加空间名前缀。更改 namespaced 属性后不需要修改模块内的代码。
+  
+##### 在带命名空间的模块内访问全局内容（Global Assets）
+  - 如果你希望使用全局 state 和 getter，rootState 和 rootGetter 会作为第三和第四参数传入 getter，也会通过 context 对象的属性传入 action。
+  - 若需要在全局命名空间内分发 action 或提交 mutation，将 { root: true } 作为第三参数传给 dispatch 或 commit 即可。
+  ```javascript
+    modules: {
+      foo: {
+        namespaced: true,
     
+        getters: {
+          // 在这个模块的 getter 中，`getters` 被局部化了
+          // 你可以使用 getter 的第四个参数来调用 `rootGetters`
+          someGetter (state, getters, rootState, rootGetters) {
+            getters.someOtherGetter // -> 'foo/someOtherGetter'
+            rootGetters.someOtherGetter // -> 'someOtherGetter'
+          },
+          someOtherGetter: state => { ... }
+        },
+    
+        actions: {
+          // 在这个模块中， dispatch 和 commit 也被局部化了
+          // 他们可以接受 `root` 属性以访问根 dispatch 或 commit
+          someAction ({ dispatch, commit, getters, rootGetters }) {
+            getters.someGetter // -> 'foo/someGetter'
+            rootGetters.someGetter // -> 'someGetter'
+    
+            dispatch('someOtherAction') // -> 'foo/someOtherAction'
+            dispatch('someOtherAction', null, { root: true }) // -> 'someOtherAction'
+    
+            commit('someMutation') // -> 'foo/someMutation'
+            commit('someMutation', null, { root: true }) // -> 'someMutation'
+          },
+          someOtherAction (ctx, payload) { ... }
+        }
+      }
+    }
+  ```
+   
+##### 在带命名空间的模块注册全局 action
+  - 若需要在带命名空间的模块注册全局 action，你可添加 root: true，并将这个 action 的定义放在函数 handler 中。例如：
+  ```javascript
+    {
+      actions: {
+        someOtherAction ({dispatch}) {
+          dispatch('someAction')
+        }
+      },
+      modules: {
+        foo: {
+          namespaced: true,
+    
+          actions: {
+            someAction: {
+              root: true,
+              handler (namespacedContext, payload) { ... } // -> 'someAction'
+            }
+          }
+        }
+      }
+    }
+  ```    
  
+##### 带命名空间的绑定函数
+  - 当使用 mapState, mapGetters, mapActions 和 mapMutations 这些函数来绑定带命名空间的模块时，写起来可能比较繁琐：
+  ```javascript
+    computed: {
+      ...mapState({
+        a: state => state.some.nested.module.a,
+        b: state => state.some.nested.module.b
+      })
+    },
+    methods: {
+      ...mapActions([
+        'some/nested/module/foo', // -> this['some/nested/module/foo']()
+        'some/nested/module/bar' // -> this['some/nested/module/bar']()
+      ])
+    }
+  ```    
+  - 对于这种情况，你可以将模块的空间名称字符串作为第一个参数传递给上述函数，这样所有绑定都会自动将该模块作为上下文。于是上面的例子可以简化为：
+  ```javascript
+    computed: {
+      ...mapState('some/nested/module', {
+        a: state => state.a,
+        b: state => state.b
+      })
+    },
+    methods: {
+      ...mapActions('some/nested/module', [
+        'foo', // -> this.foo()
+        'bar' // -> this.bar()
+      ])
+    }
+  ```
+  - 而且，你可以通过使用 createNamespacedHelpers 创建基于某个命名空间辅助函数。它返回一个对象，对象里有新的绑定在给定命名空间值上的组件绑定辅助函数：
+  ```javascript
+    import { createNamespacedHelpers } from 'vuex'
+    
+    const { mapState, mapActions } = createNamespacedHelpers('some/nested/module')
+    
+    export default {
+      computed: {
+        // 在 `some/nested/module` 中查找
+        ...mapState({
+          a: state => state.a,
+          b: state => state.b
+        })
+      },
+      methods: {
+        // 在 `some/nested/module` 中查找
+        ...mapActions([
+          'foo',
+          'bar'
+        ])
+      }
+    }
+  ``` 
+  
+##### 给插件开发者的注意事项
+  - 如果你开发的插件（Plugin）提供了模块并允许用户将其添加到 Vuex store，可能需要考虑模块的空间名称问题。对于这种情况，你可以通过插件的参数对象来允许用户指定空间名称：
+  ```javascript
+    // 通过插件的参数对象得到空间名称
+    // 然后返回 Vuex 插件函数
+    export function createPlugin (options = {}) {
+      return function (store) {
+        // 把空间名字添加到插件模块的类型（type）中去
+        const namespace = options.namespace || ''
+        store.dispatch(namespace + 'pluginAction')
+      }
+    }
+  ```  
+
+##### 模块动态注册
+  1. 在 store 创建之后，你可以使用 store.registerModule 方法注册模块：
+  ```javascript
+    // 注册模块 `myModule`
+    store.registerModule('myModule', {
+      // ...
+    })
+    // 注册嵌套模块 `nested/myModule`
+    store.registerModule(['nested', 'myModule'], {
+      // ...
+    })
+  ```
+  
+   - 之后就可以通过 store.state.myModule 和 store.state.nested.myModule 访问模块的状态。
+   - 模块动态注册功能使得其他 Vue 插件可以通过在 store 中附加新模块的方式来使用 Vuex 管理状态。例如，vuex-router-sync 插件就是通过动态注册模块将 vue-router 和 vuex 结合在一起，实现应用的路由状态管理。
+   - 你也可以使用 store.unregisterModule(moduleName) 来动态卸载模块。注意，你不能使用此方法卸载静态模块（即创建 store 时声明的模块）
+  2. 保留 state
+   - 在注册一个新 module 时，你很有可能想保留过去的 state，例如从一个服务端渲染的应用保留 state。你可以通过 preserveState 选项将其归档：store.registerModule('a', module, { preserveState: true })。
+     
+   - 当你设置 preserveState: true 时，该模块会被注册，action、mutation 和 getter 会被添加到 store 中，但是 state 不会。这里假设 store 的 state 已经包含了这个 module 的 state 并且你不希望将其覆写。
+
+##### 模块重用
+  - 有时我们可能需要创建一个模块的多个实例，例如：
+    - 创建多个 store，他们公用同一个模块 (例如当 runInNewContext 选项是 false 或 'once' 时，为了在服务端渲染中避免有状态的单例)
+    - 在一个 store 中多次注册同一个模块
+  - 如果我们使用一个纯对象来声明模块的状态，那么这个状态对象会通过引用被共享，导致状态对象被修改时 store 或模块间数据互相污染的问题。
+  - 实际上这和 Vue 组件内的 data 是同样的问题。因此解决办法也是相同的——使用一个函数来声明模块状态（仅 2.3.0+ 支持）：
+  ```javascript
+    const MyReusableModule = {
+      state () {
+        return {
+          foo: 'bar'
+        }
+      },
+      // mutation, action 和 getter 等等...
+    }
+  ```      
+
+### 2.5.1、module - 博客
+- modules 模块化 以及 组件中引入 mapGetters、mapActions 和 mapStates的使用
+- 因为在大多数的项目中，我们对于全局状态的管理并不仅仅一种情况的需求，有时有多方面的需求，比如写一个商城项目，你所用到的全局state可能是关于购物车这一块儿的也有可能是关于商品价格这一块儿的；像这样的情况我们就要考虑使用vuex中的 modules 模块化了，具体怎么使用modules呢？咱们继续一步一步的走：
+  1. 首先，在store文件夹下面新建一个modules文件夹，然后在modules文件里面建立需要管理状态的js文件，既然要把不同部分的状态分开管理，那就要把它们给分成独立的状态文件了，如下图：
+  ![avatar](/src/assets/path.jpg)
+  
